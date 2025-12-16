@@ -215,12 +215,28 @@
         }
 
         .table-content-cv{
-            border-spacing: 7px 0px;
+            border-spacing: 0px 0px;
         }
 
         .content-cv{
             text-align: justify;
         }
+        
+        .content-cv ol,
+        .content-cv ul {
+            margin: 4px 0;
+            padding-left: 18px;
+        }
+        
+        .content-cv li {
+            line-height: 1.4;
+        }
+        
+        .content-cv li p {
+            margin: 0;
+        }
+
+        
         .tr-content-cv{
             margin: 10px;
         }
@@ -232,6 +248,22 @@
             margin: 12mm;
             font-size: 10px;
         }
+
+        .trix-content {
+            text-align: justify;        /* rata kanan kiri */
+            text-justify: inter-word;
+            line-height: 1.8;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        /* Biar rapi antar paragraf */
+        .trix-content p {
+            margin-bottom: 1rem;
+        }
+
+
+
     </style>
 
 </head>
@@ -245,7 +277,7 @@
         <div class="address">
             Grand Galaxy City Jl. Cordova 3 Blok RGC3 No.58 <br>
             Jaka Setia – Bekasi Selatan – Jawa Barat 17147 <br>
-            &copy; {{ date('F Y') }} I-solutions Indonesia. All rights reserved.
+            &copy; {{ date('F Y') }} ISolutions Indonesia. All rights reserved.
         </div>
         <div class="qr-code">
             <img src="{{ public_path('assets/QR.png') }}" alt="QR Code" class="qr-code">
@@ -266,10 +298,13 @@
         </div>
 
 
-        <div class="section">
+       <div class="section">
             <h2>Profile</h2>
-            <p>{{ $applicant->profile }}</p>
+            <div class="trix-content">
+                {!! $applicant->profile !!}
+            </div>
         </div>
+
 
         <div class="section">
             <h2>Education</h2>
@@ -277,7 +312,7 @@
                 <tr class="tr-content-cv">
                     <td><strong>Education</strong></td>
                     <td>:</td>
-                    <td>{{ optional($applicant->education)->name_education }}</td>
+                    <td>{{ optional($applicant->education)->name_education }} - {{ optional($applicant->jurusan)->name_school}}</td>
                 </tr>
                 <tr class="tr-content-cv">
                     <td><strong>Major</strong></td>
@@ -319,13 +354,28 @@
                 <tr class="tr-content-cv">
                     <td class="title-content-cv"><strong>Company</strong></td> <td>:</td> <td class="content-cv">{{ $experience->name_company }}</td>
                 </tr>
+                 <tr class="tr-content-cv">
+                    <td class="title-content-cv"><strong>Period</strong></td>
+                    <td>:</td>
+                    <td>
+                        {{ \Carbon\Carbon::parse($experience->mulai)->format('M Y') }}
+                        -
+                        {{ $experience->present == 'present'
+                            ? 'Present'
+                            : \Carbon\Carbon::parse($experience->selesai)->format('M Y')
+                        }}
+                    </td>
+                </tr>
                 <tr class="tr-content-cv">
-                    <td class="title-content-cv"><strong>Description</strong></td> <td>:</td> <td class="content-cv">{!! $experience->desc_kerja !!}</td>
+                    <td class="title-content-cv"><strong>Responsibility</strong></td> <td>:</td> <td class="content-cv">{!! $experience->desc_kerja !!}</td>
                     {{-- <td class="title-content-cv"><strong>Description</strong></td> <td>:</td> <td class="content-cv">{{ $experience->desc_kerja }}</td> --}}
                 </tr>
-                <tr class="tr-content-cv">
-                    <td class="title-content-cv"><strong>Period</strong></td> <td>:</td> <td>{{ $experience->mulai }} - {{ ($experience->present == 'present' ? 'present' : $experience->selesai) }}</td>
-                </tr>
+                <!--<tr class="tr-content-cv">-->
+                <!--    <td class="title-content-cv"><strong>Period</strong></td> <td>:</td> <td>{{ $experience->mulai }} - {{ ($experience->present == 'present' ? 'present' : $experience->selesai) }}</td>-->
+                <!--</tr>-->
+                
+               
+
             </table>
 
             @endforeach

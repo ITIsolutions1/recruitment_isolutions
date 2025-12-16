@@ -26,6 +26,14 @@ class HomeController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
    
+
+
+
+    public function dummy()
+    {
+        return view('dummy');      
+    }
+
      public function index()
 {
     $overall_data = count(Applicant::whereNull('type')->get());

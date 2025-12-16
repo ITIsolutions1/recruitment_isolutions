@@ -92,6 +92,8 @@ Route::middleware(['admin.only', 'auth'])->group(function(){
     Route::get('educationMajorCreate/{id}', [JurusanController::class, 'educationMajorCreate'])->name('educationMajorCreate');
 
     Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::get('/dummy', [App\Http\Controllers\HomeController::class, 'dummy'])->name('dummy');
+
     //ganti TYPE DATA pelamar isolutions, resindo dll
     Route::post('pipelines/changetype', [ApplicantController::class, 'changeType'])->name('pipelines.changetype');
 

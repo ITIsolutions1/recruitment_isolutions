@@ -353,15 +353,15 @@ if ($request->has('search')) {
     $search_by = $request->get('search_by');
 
     if ($jobId && $status) {
-        $query->where('name', 'like', "{$search}%");
+        $query->where('name', 'like', "%{$search}%");
     } else {
         if ($search_by === 'name') {
             // Filter langsung di kolom applicant
-            $query->where('name', 'like', "{$search}%");
+            $query->where('name', 'like', "%{$search}%");
         } elseif ($search_by === 'job_name') {
             // Filter di relasi job
             $query->whereHas('job', function ($q) use ($search) {
-                $q->where('job_name', 'like', "{$search}%");
+                $q->where('job_name', 'like', "%{$search}%");
             });
         }
     }
@@ -529,8 +529,21 @@ if ($request->has('search')) {
         }
         $educationId = $request->education;
         // Cek dan simpan jurusan
-        $jurusan = Jurusan::firstOrCreate(['name_jurusan' => $request->jurusan], ['education_id' => $educationId]);
+        // $jurusan = Jurusan::firstOrCreate(['name_jurusan' => $request->jurusan], ['education_id' => $educationId]);
 
+
+        $jurusan = Jurusan::firstOrCreate(
+    [
+        'name_jurusan' => $request->jurusan,
+        'name_school'  => $request->name_school
+    ],
+    [
+        'education_id' => $educationId
+    ]
+);
+
+
+        
         //=== bagian ubah input text jadi integer, karena di input type nya text untuk keperluan formating =======
         $salary_expectation = $request->input('salary_expectation');
         $salary_expectation = str_replace(['.', ','], '', $salary_expectation);
@@ -694,12 +707,14 @@ if ($request->has('search')) {
 
         if ($applicant->jurusan) {
             $applicant->jurusan->update([
-                'name_jurusan' => $request->jurusan
+                'name_jurusan' => $request->jurusan,
+                 'name_school'  => $request->name_school,
             ]);
         } else {
             // Jika tidak ada, buat data jurusan baru
             $newJurusan = Jurusan::create([
                 'name_jurusan' => $request->jurusan,
+                 'name_school'  => $request->name_school,
                 'education_id' => $request->education
             ]);
             $applicant->jurusan_id = $newJurusan->id;

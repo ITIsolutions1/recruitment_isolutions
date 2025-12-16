@@ -48,6 +48,22 @@
                                 @enderror
                             </div>
 
+                             <div class="form-group row">
+                            `    <div class="input">
+                                    <label for="name_school" class="form-label">
+                                        Name School<span class="important_input"> *</span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="name_school" 
+                                        name="name_school" 
+                                        class="form-control" 
+                                        placeholder="Enter School Name"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
                             <div class="education row">
 
                                 <!-- pendidikan -->
@@ -115,14 +131,30 @@
                             </div>
 
                             <!-- Profile -->
-                            <div class="form-group">
-                                <label for="profile">Profile</label>
-                                <textarea class="form-control @error('profile') is-invalid @enderror" id="profile" name="profile" placeholder="describe yourself">{{ old('profile') }}</textarea>
-                                @error('profile')
-                                <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                            </div>
+                               <div class="form-group">
+                            <label for="profile">Profile</label>
 
+                            <!-- Toolbar (opsional, bisa custom) -->
+                            <trix-toolbar id="profile-toolbar"></trix-toolbar>
+
+                            <!-- Hidden input (yang dikirim ke backend) -->
+                            <input
+                                type="hidden"
+                                id="profile"
+                                name="profile"
+                            >
+
+                            <!-- Trix Editor -->
+                            <trix-editor
+                                input="profile"
+                                toolbar="profile-toolbar"
+                                class="trix-content @error('profile') is-invalid @enderror"
+                            ></trix-editor>
+
+                            @error('profile')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
                         </div>
 
                         <div class="kanan col-md-5">

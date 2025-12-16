@@ -14,6 +14,7 @@ class Jurusan extends Model
     protected $fillable = [
         'name_jurusan',
         'education_id', // Ensure this is included
+        'name_school',
     ];
 
 
