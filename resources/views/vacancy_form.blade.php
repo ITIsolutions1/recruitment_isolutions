@@ -77,6 +77,21 @@
                             <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
+                         <div class="form-group row">
+                                <div class="input">
+                                    <label for="name_school" class="form-label">
+                                        Name School<span class="important_input"> *</span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="name_school" 
+                                        name="name_school" 
+                                        class="form-control" 
+                                        placeholder="Enter School Name"
+                                        required
+                                    >
+                                </div>
+                            </div>
                         <div class="input row">
                             <div class="pendidikan col-md-3">
                                 <label for="education" class="form-label">Last Education<span class="important_input"> *</span></label>
