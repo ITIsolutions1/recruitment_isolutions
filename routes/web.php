@@ -78,6 +78,8 @@ Route::middleware(['admin.only', 'auth'])->group(function(){
     Route::get('pipelines', [ApplicantController::class, 'index'])->name('pipelines.index');
     Route::put('pipelines/{id}/updateStatus', [ApplicantController::class, 'updateStatus'])->name('applicants.updateStatus');
     Route::get('/pipelines/{id}/pdf', [ApplicantController::class, 'generatePdf'])->name('applicants.generatePdf');
+    Route::get('/pipelines/{id}/pdf', [ApplicantController::class, 'generatePdf'])
+    ->name('pipelines.pdf');
     Route::post('/applicant/recommend', [ApplicantController::class, 'updateRecommendation'])->name('applicant.recommend');
     Route::delete('/pipelines/{applicant}', [ApplicantController::class, 'destroy'])->name('pipelines.destroy');
     Route::get('/get-jurusan/{education_id}', [ApplicantController::class, 'getJurusan']);

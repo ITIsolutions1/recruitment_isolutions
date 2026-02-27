@@ -705,21 +705,33 @@ if ($request->has('search')) {
         // Retrieve the applicant
         $applicant = Applicant::findOrFail($id);
 
-        if ($applicant->jurusan) {
-            $applicant->jurusan->update([
-                'name_jurusan' => $request->jurusan,
-                 'name_school'  => $request->name_school,
-            ]);
-        } else {
-            // Jika tidak ada, buat data jurusan baru
-            $newJurusan = Jurusan::create([
-                'name_jurusan' => $request->jurusan,
-                 'name_school'  => $request->name_school,
-                'education_id' => $request->education
-            ]);
-            $applicant->jurusan_id = $newJurusan->id;
-            $applicant->save();
-        }
+        // if ($applicant->jurusan) {
+        //     $applicant->jurusan->update([
+        //         'name_jurusan' => $request->jurusan,
+        //          'name_school'  => $request->name_school,
+        //     ]);
+        // } else {
+        //     // Jika tidak ada, buat data jurusan baru
+        //     $newJurusan = Jurusan::create([
+        //         'name_jurusan' => $request->jurusan,
+        //          'name_school'  => $request->name_school,
+        //         'education_id' => $request->education
+        //     ]);
+        //     $applicant->jurusan_id = $newJurusan->id;
+        //     $applicant->save();
+        // }
+        if ($request->filled('jurusan') || $request->filled('name_school')) {
+
+    $newJurusan = Jurusan::create([
+        'education_id' => $request->education,
+        'name_jurusan' => $request->jurusan,
+        'name_school'  => $request->name_school,
+    ]);
+
+    // HUBUNGKAN applicant ke jurusan baru
+    $applicant->jurusan_id = $newJurusan->id;
+    $applicant->save();
+}
 
         // Handle file upload for photo_pass if provided
         if ($request->hasFile('photo_pass')) {
