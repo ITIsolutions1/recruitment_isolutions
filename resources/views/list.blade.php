@@ -9,6 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
   <style>
+    .vacancy-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.share-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.share-icon button {
+  font-size: 26px;
+  font-weight: 900;
+  color: #222;
+  border: none;
+  background: transparent;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
     * {
       box-sizing: border-box;
     }
@@ -17,6 +38,10 @@
       height: 100%;
       margin: 0;
       font-family: 'Poppins', sans-serif;
+    }
+
+    .li {
+      font-size: 14px;
     }
 
     .container-full {
@@ -155,30 +180,84 @@
     </div>
 
     <div class="row-container">
-      <div class="job-list-container">
-        @foreach($jobs as $job)
-          @if($job->status != 'unpublish')
-            <div class="vacancy-container" data-job-id="{{ $job->id }}" onclick="loadJobDetails({{ $job->id }})">
-              <p class="job-name">{{ $job->job_name }}</p>
-              <div class="job-info">
-                <p>Employment Type: {{ $job->employment_type }}<br>Location: {{ $job->workLocation->location }}</p>
-              </div>
-            </div>
-          @endif
-        @endforeach
-        <div class="pagination-container">
-          {{ $jobs->links('pagination::bootstrap-4') }}
+  <div class="job-list-container">
+    @foreach($jobs as $job)
+
+      <div class="vacancy-container" 
+           data-job-id="{{ $job->id }}" 
+           onclick="loadJobDetails({{ $job->id }})">
+
+        <!-- Dropdown Share -->
+        <div class="dropdown share-icon" onclick="event.stopPropagation();">
+          <button class="btn btn-sm p-0 border-0 bg-transparent" 
+                  type="button" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false">
+            &#8942;
+          </button>
+
+          <ul class="dropdown-menu dropdown-menu-end shadow rounded-3">
+            <li>
+              <a class="dropdown-item" href="mailto:?subject=Job Vacancy&body={{ url('/jobs/'.$job->id) }}">
+                📧 Email
+              </a>
+            </li>
+
+            <li>
+              <a class="dropdown-item" href="https://www.facebook.com/sharer/sharer.php?u={{ url('/jobs/'.$job->id) }}" target="_blank">
+                Facebook
+              </a>
+            </li>
+
+            <li>
+              <a class="dropdown-item" href="https://twitter.com/intent/tweet?url={{ url('/jobs/'.$job->id) }}" target="_blank">
+                Twitter
+              </a>
+            </li>
+
+            <li>
+              <a class="dropdown-item" href="https://www.linkedin.com/sharing/share-offsite/?url={{ url('/jobs/'.$job->id) }}" target="_blank">
+                LinkedIn
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider"></li>
+
+            <li>
+              <button style="font-size: 15px;" class="dropdown-item" onclick="copyLink(event, '{{ url('/jobs/'.$job->id) }}')">
+                🔗 Copy Link
+              </button>
+            </li>
+          </ul>
         </div>
+
+        <!-- Job Content -->
+        <p class="job-name">{{ $job->job_name }}</p>
+
+        <div class="job-info">
+          <p>
+            Employment Type: {{ $job->employment_type }}<br>
+            Location: {{ $job->workLocation->location }}
+          </p>
+        </div>
+
       </div>
 
-      <div class="job-details-container" id="job-details-container">
-        <div class="kontainer_vacancy" id="job-details-placeholder">
-          <h4>Select a job to view details</h4>
-          <p>Please click on a job from the list to see the details here.</p>
-        </div>
-      </div>
+    @endforeach
+
+    <div class="pagination-container">
+      {{ $jobs->links('pagination::bootstrap-4') }}
     </div>
   </div>
+</div>
+
+  <div class="job-details-container" id="job-details-container">
+    <div class="kontainer_vacancy" id="job-details-placeholder">
+      <h4>Select a job to view details</h4>
+      <p>Please click on a job from the list to see the details here.</p>
+    </div>
+  </div>
+</div>
 
   <script>
     function loadJobDetails(jobId) {
@@ -200,5 +279,48 @@
       }
     }
   </script>
+
+  <!-- <script>
+function shareJob(event, jobId) {
+    event.stopPropagation(); // biar tidak trigger klik parent
+
+    const url = window.location.origin + "/jobs/" + jobId;
+
+    if (navigator.share) {
+        navigator.share({
+            title: "Job Vacancy",
+            text: "Check this job vacancy",
+            url: url
+        });
+    } else {
+        navigator.clipboard.writeText(url)
+            .then(() => alert("Link copied!"))
+            .catch(() => alert("Failed to copy link"));
+    }
+}
+</script> -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function copyLink(event, url) {
+    event.stopPropagation();
+
+    const tempInput = document.createElement("input");
+    tempInput.value = url;
+    document.body.appendChild(tempInput);
+
+    tempInput.select();
+    tempInput.setSelectionRange(0, 99999);
+
+    try {
+        document.execCommand("copy");
+        alert("Link copied!");
+    } catch (err) {
+        alert("Failed to copy link");
+    }
+
+    document.body.removeChild(tempInput);
+}
+</script>
 </body>
 </html>

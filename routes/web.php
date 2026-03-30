@@ -39,6 +39,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/list', [VacancyController::class, 'list'])->name('vacancy_list');
 Route::get('/list1', [VacancyController::class, 'list2'])->name('list');
+Route::get('/jobs/{id}', [VacancyController::class, 'show'])->name('jobs.show');
+
 Route::get('/job/{job}', [VacancyController::class, 'showJobDetails'])->name('vacancy.details');
 Route::get('/vacancy/{id}', [VacancyController::class, 'index'])->name('vacancy');
 Route::get('/list1/search', [VacancyController::class, 'search'])->name('vacancy.search');

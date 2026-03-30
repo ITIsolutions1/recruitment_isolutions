@@ -105,15 +105,28 @@ class VacancyController extends Controller
 {
     // Paginate the jobs, showing 10 per page, where 'status_published' is 1
     $jobs = Job::where('status_published', 1)
-               ->paginate(10); // Paginate results, 10 per page
+    ->orderBy('updated_at', 'desc')
+    ->paginate(10);
+    // $jobs = Job::where('status_published', 1)
+    //            ->paginate(10); // Paginate results, 10 per page
 
     // Append the current query parameters to preserve filters across pagination
-    $jobs->appends($request->all());
+    $jobs->ap   pends($request->all());
 
     // Return the view with the jobs
     return view('list', compact('jobs'));
 }
 
+public function show($id)
+{
+    $job = \App\Models\Job::with('workLocation')->findOrFail($id);
+
+    if ($job->status === 'unpublish') {
+        abort(403);
+    }
+
+    return view('jobs.show', compact('job'));
+}
     public function submit_applicant(Request $request)
     {
         $data = $request;
