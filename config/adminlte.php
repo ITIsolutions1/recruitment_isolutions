@@ -323,7 +323,7 @@ return [
         [
             'text' => 'jobs',
             'url' => '/jobs',
-            'icon' => 'fa fa-briefcase',
+            ' icon' => 'fa fa-briefcase',
             'can' => 'sidemenu jobs',
         ],
 
@@ -336,12 +336,12 @@ return [
             'can' => 'sidemenu pipeline isolutions'
         ],
 
-        [
-            'text' => 'Pipeline-resindo',
-            'url' => '/pipelines-resindo',
-            'icon' => 'fa fa-users',
-            'can' => 'sidemenu pipeline resindo'
-        ],
+        // [
+        //     'text' => 'Pipeline-resindo',
+        //     'url' => '/pipelines-resindo',
+        //     'icon' => 'fa fa-users',
+        //     'can' => 'sidemenu pipeline resindo'
+        // ],
         // ['header' => 'account_settings'],
         // [
         //     'text' => 'profile',

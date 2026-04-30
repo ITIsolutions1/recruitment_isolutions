@@ -35,6 +35,10 @@ class Applicant extends Model
         'status',
         'type',
         'salary_current',
+        'ijazah_file',
+        'strengths',
+        'weaknesses',
+
     ];
 
     // Define the relationship with the Job model
@@ -93,5 +97,10 @@ class Applicant extends Model
     }
     public function user(){
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function certificateFiles()
+    {
+        return $this->hasMany(CertificateFile::class);
     }
 }

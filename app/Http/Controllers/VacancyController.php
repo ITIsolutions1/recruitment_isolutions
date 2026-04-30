@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Carbon;
 use App\Mail\register_mail;
 use Illuminate\Support\Facades\Mail;
+use App\Models\CertificateFile;
+
 
 class VacancyController extends Controller
 {
@@ -111,7 +113,7 @@ class VacancyController extends Controller
     //            ->paginate(10); // Paginate results, 10 per page
 
     // Append the current query parameters to preserve filters across pagination
-    $jobs->ap   pends($request->all());
+    $jobs->appends($request->all());
 
     // Return the view with the jobs
     return view('list', compact('jobs'));
@@ -160,6 +162,8 @@ public function show($id)
             'certificates.*' => 'nullable|string',
             'experience_period' => 'nullable|string',
             'photo_pass' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'ijazah_file' => 'nullable|mimes:pdf,jpg,jpeg,png|max:5048',
+              'certificate_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048',
             'profile' => 'nullable|string',
             'languages' => 'nullable|string',
             'mbti' => 'nullable|string',
@@ -191,8 +195,12 @@ public function show($id)
 
         // Handle file upload for photo_pass if provided
         $path = null;
+        $ijazahPath = null;
         if ($request->hasFile('photo_pass')) {
             $path = $request->file('photo_pass')->store('photos', 'public');
+        }
+         if ($request->hasFile('ijazah_file')) {
+            $ijazahPath = $request->file('ijazah_file')->store('ijazah', 'public');
         }
         $educationId = $request->education;
         // Cek dan simpan jurusan
@@ -248,6 +256,7 @@ public function show($id)
             'certificates' => implode("|", $request->certificates ?? []),
             'experience_period' => $request->experience_period,
             'photo_pass' => $path,
+            'ijazah_file' => $ijazahPath,
             'profile' => $request->profile,
             'languages' => $request->languages,
             'mbti' => $request->mbti,
@@ -259,6 +268,19 @@ public function show($id)
             'education_id' => $request->education, // Pastikan ini mengacu ke id yang benar
             'jurusan_id' => $jurusan->id, // Gunakan ID dari jurusan
         ]);
+
+         if ($request->hasFile('certificate_files')) {
+
+            foreach ($request->file('certificate_files') as $file) {
+
+                $path = $file->store('sertifikat', 'public');
+
+                CertificateFile::create([
+                    'applicant_id' => $applicant->id,
+                    'file' => $path
+                ]);
+            }
+        }
 
         // Handle work experiences
         if ($request->has('role')) {

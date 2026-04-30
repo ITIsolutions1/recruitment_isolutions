@@ -18,54 +18,66 @@ use App\Mail\interview_mail;
 use App\Mail\offer_mail;
 use App\Mail\accepted_mail;
 use App\Mail\rejected_mail;
+use App\Mail\CustomMail;
 use Illuminate\Support\Facades\Mail;
+use App\Models\CertificateFile;
+use ZipArchive;
 
 class ApplicantController extends Controller
 {
 
-    public function sendEmailNotification(Request $request){
+    // public function sendEmailNotification(Request $request){
 
-        $applicant = Applicant::findOrFail($request->id_for_notification);
-        // if(!$applicant->job_id){
-        //     return redirect()->back()->with('pelamar belum melamar pekerjaan');
-        // }
-        // return $applicant;
-        if($applicant->status == 'interview'){
-            Mail::to($applicant->email)->queue(new interview_mail($request->email_notes));
+    //     $applicant = Applicant::findOrFail($request->id_for_notification);
+    //     // if(!$applicant->job_id){
+    //     //     return redirect()->back()->with('pelamar belum melamar pekerjaan');
+    //     // }
+    //     // return $applicant;
+    //     if($applicant->status == 'interview'){
+    //         Mail::to($applicant->email)->queue(new interview_mail($request->email_notes));
 
-        }elseif($applicant->status == 'offer'){
+    //     }elseif($applicant->status == 'offer'){
 
-            $position = Job::findOrFail($applicant->job_id)->job_name;
-            $name = $applicant->name;
-            $location   = $request->location ?? '-';
-            $start_date = $request->start_date ?? '-';
-            $end_date   = $request->end_date ?? '-';
+    //         $position = Job::findOrFail($applicant->job_id)->job_name;
+    //         $name = $applicant->name;
+    //         $location   = $request->location ?? '-';
+    //         $start_date = $request->start_date ?? '-';
+    //         $end_date   = $request->end_date ?? '-';
 
-            Mail::to($applicant->email)->queue(new offer_mail($request->email_notes, $position, $name, $location, $start_date, $end_date ));
+    //         Mail::to($applicant->email)->queue(new offer_mail($request->email_notes, $position, $name, $location, $start_date, $end_date ));
 
-        }elseif($applicant->status == 'accepted'){
-            Mail::to($applicant->email)->queue(new accepted_mail($request->email_notes));
-            if(in_array($applicant->status, ['bankcv', 'not_qualify', 'accepted'])){
-            $applicant->job_id = null;
-            $applicant->save();
-            }
+    //     }elseif($applicant->status == 'accepted'){
+    //         Mail::to($applicant->email)->queue(new accepted_mail($request->email_notes));
+    //         if(in_array($applicant->status, ['bankcv', 'not_qualify', 'accepted'])){
+    //         $applicant->job_id = null;
+    //         $applicant->save();
+    //         }
 
-        }else{
-            $position = Job::findOrFail($applicant->job_id)->job_name;
-            $name = $applicant->name;
-            Mail::to($applicant->email)->queue(new rejected_mail($request->email_notes, $name, $position));
+    //     }else{
+    //         $position = Job::findOrFail($applicant->job_id)->job_name;
+    //         $name = $applicant->name;
+    //         Mail::to($applicant->email)->queue(new rejected_mail($request->email_notes, $name, $position));
 
-            if(in_array($applicant->status, ['bankcv', 'not_qualify'])){
-            $applicant->job_id = null;
-            $applicant->save();
+    //         if(in_array($applicant->status, ['bankcv', 'not_qualify'])){
+    //         $applicant->job_id = null;
+    //         $applicant->save();
 
-            }
-        }
+    //         }
+    //     }
 
-        return redirect()->back();
+    //     return redirect()->back();
 
-    }
+    // }
 
+    public function sendEmailNotification(Request $request)
+{
+    $applicant = Applicant::findOrFail($request->id_for_notification);
+
+    Mail::to($applicant->email)
+       ->send(new CustomMail($request->email_notes));
+
+    return redirect()->back()->with('success', 'Email sent successfully');
+}
 
 
     public function generatePdf($id)
@@ -497,6 +509,8 @@ if ($request->has('search')) {
             'certificates.*' => 'nullable|string',
             'experience_period' => 'nullable|string',
             'photo_pass' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'ijazah_file' => 'nullable|mimes:pdf,jpg,jpeg,png|max:5048',
+            'certificate_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048',
             'profile' => 'nullable|string',
             'languages' => 'nullable|string',
             'mbti' => 'nullable|string',
@@ -524,10 +538,16 @@ if ($request->has('search')) {
 
         // Handle file upload for photo_pass if provided
         $path = null;
+        $ijazahPath = null;
         if ($request->hasFile('photo_pass')) {
             $path = $request->file('photo_pass')->store('photos', 'public');
         }
-        $educationId = $request->education;
+        if ($request->hasFile('ijazah_file')) {
+            $ijazahPath = $request->file('ijazah_file')->store('ijazah', 'public');
+        }
+
+       
+                $educationId = $request->education;
         // Cek dan simpan jurusan
         // $jurusan = Jurusan::firstOrCreate(['name_jurusan' => $request->jurusan], ['education_id' => $educationId]);
 
@@ -567,6 +587,7 @@ if ($request->has('search')) {
             'certificates' => implode("|", $request->certificates ?? []),
             'experience_period' => $request->experience_period,
             'photo_pass' => $path,
+            'ijazah_file' => $ijazahPath,
             'profile' => $request->profile,
             'languages' => $request->languages,
             'mbti' => $request->mbti,
@@ -578,6 +599,20 @@ if ($request->has('search')) {
             'education_id' => $request->education, // Pastikan ini mengacu ke id yang benar
             'jurusan_id' => $jurusan->id, // Gunakan ID dari jurusan
         ]);
+
+         // ================= SERTIFIKAT =================
+        if ($request->hasFile('certificate_files')) {
+
+            foreach ($request->file('certificate_files') as $file) {
+
+                $path = $file->store('sertifikat', 'public');
+
+                CertificateFile::create([
+                    'applicant_id' => $applicant->id,
+                    'file' => $path
+                ]);
+            }
+        }
 
         // Handle work experiences
         if ($request->has('role')) {
@@ -672,6 +707,9 @@ if ($request->has('search')) {
             'certificates.*' => 'nullable|string',
             'experience_period' => 'nullable|string',
             'photo_pass' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'ijazah_file' => 'nullable|mimes:pdf,jpg,jpeg,png|max:5048',
+            'certificate_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048',
+
             'profile' => 'nullable|string',
             'languages' => 'nullable|string',
             'mbti' => 'nullable|string',
@@ -739,6 +777,18 @@ if ($request->has('search')) {
             $path = $request->file('photo_pass')->store('photos', 'public');
             $applicant->update(['photo_pass' => $path]);
         }
+        if ($request->hasFile('ijazah')) {
+
+    if ($applicant->ijazah_file && Storage::disk('public')->exists($applicant->ijazah_file)) {
+        Storage::disk('public')->delete($applicant->ijazah_file);
+    }
+
+    $ijazahPath = $request->file('ijazah')->store('ijazah', 'public');
+
+    $applicant->update([
+        'ijazah_file' => $ijazahPath
+    ]);
+}
 
         //=== bagian ubah input text jadi integer, karena di input type nya text untuk keperluan formating =======
         $salary_expectation = $request->input('salary_expectation');
@@ -773,6 +823,20 @@ if ($request->has('search')) {
             'education_id' => $request->education,
             // 'jurusan_id' => $request->jurusan,
         ]);
+
+        if ($request->hasFile('certificate_files')) {
+
+    foreach ($request->file('certificate_files') as $file) {
+
+        // upload file baru
+        $path = $file->store('sertifikat', 'public');
+
+        // simpan ke database (TAMBAH, bukan replace)
+        $applicant->certificateFiles()->create([
+            'file' => $path
+        ]);
+    }
+}
 
         // Update or create work experiences
         $applicant->workExperiences()->delete(); // Delete previous work experiences
@@ -868,11 +932,17 @@ if ($request->has('search')) {
         return view('jobs.show', compact('applicants', 'jobTitle', 'stageName'));
     }
 
-    public function getNotes($id)
-    {
-        $notes = Notes::where('applicant_id', $id)->first();
-        return response()->json($notes);
-    }
+public function getNotes($id)
+{
+    $notes = Notes::where('applicant_id', $id)->first();
+    $applicant = Applicant::find($id);
+
+    return response()->json([
+        'notes' => $notes->notes ?? '',
+        'strengths' => $applicant->strengths ?? '',
+        'weaknesses' => $applicant->weaknesses ?? '',
+    ]);
+}
     public function saveNotes(Request $request)
     {
         $request->validate([
@@ -904,6 +974,20 @@ if ($request->has('search')) {
 
         return response()->json(['message' => 'Notes saved successfully!']);
     }
+
+    public function saveStrengthWeakness(Request $request)
+{
+    $applicant = Applicant::findOrFail($request->applicant_id);
+
+    $applicant->update([
+        'strengths' => $request->strengths,
+        'weaknesses' => $request->weaknesses,
+    ]);
+
+    return response()->json([
+        'message' => 'Strength & Weakness saved successfully'
+    ]);
+}
 
     public function deleteNotes(Request $request)
     {
@@ -953,5 +1037,99 @@ if ($request->has('search')) {
         return redirect()->back()->with('success', 'successfully change type');
     }
 
+   public function downloadLampiran($id)
+{
+    $applicant = Applicant::with('certificateFiles')->findOrFail($id);
+
+    $zip = new ZipArchive;
+
+    //  amankan nama file
+    $safeName = preg_replace('/[^A-Za-z0-9\-]/', '_', $applicant->name);
+    $fileName = 'lampiran_' . $safeName . '.zip';
+
+    // simpan zip di public
+    $zipPath = public_path($fileName);
+
+    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+        dd('ZIP gagal dibuat');
+    }
+
+    $filesAdded = false;
+
+    //  helper cari path file
+    function getFilePath($file)
+    {
+        if (!$file) return null;
+
+        $paths = [
+            storage_path('app/public/' . $file),
+            storage_path('app/' . $file),
+            public_path($file),
+        ];
+
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
+    // IJAZAH
+    $ijazahPath = getFilePath($applicant->ijazah_file);
+    if ($ijazahPath) {
+        $zip->addFile(
+            $ijazahPath,
+            'ijazah.' . pathinfo($ijazahPath, PATHINFO_EXTENSION)
+        );
+        $filesAdded = true;
+    }
+
+    //  PHOTOPASS
+    $photoPath = getFilePath($applicant->photo_pass);
+    if ($photoPath) {
+        $zip->addFile(
+            $photoPath,
+            'photopass.' . pathinfo($photoPath, PATHINFO_EXTENSION)
+        );
+        $filesAdded = true;
+    }
+
+    //  CERTIFICATES (MULTIPLE)
+    foreach ($applicant->certificateFiles as $index => $cert) {
+        $certPath = getFilePath($cert->file);
+
+        if ($certPath) {
+            $zip->addFile(
+                $certPath,
+                'certificates/certificate_' . ($index + 1) . '.' . pathinfo($certPath, PATHINFO_EXTENSION)
+            );
+            $filesAdded = true;
+        }
+    }
+
+    $zip->close();
+
+    // ❗ kalau tidak ada file ditemukan
+    if (!$filesAdded || !file_exists($zipPath)) {
+        return back()->with('error', 'Tidak ada file lampiran yang ditemukan');
+    }
+
+    return response()->download($zipPath)->deleteFileAfterSend(true);
+}
+
+public function generateSummary($id)
+    {
+        $applicant = Applicant::find($id);
+        if (!$applicant) {
+            return redirect()->route('pipelines.index')->with('error', 'Applicant not found.');
+        }
+
+        $pdf = PDF::loadView('pipelines.summary', ['applicant' => $applicant])
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->stream('applicant-summary-' . $applicant->name . '.pdf');
+    }
 
 }

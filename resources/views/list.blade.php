@@ -249,7 +249,7 @@
       {{ $jobs->links('pagination::bootstrap-4') }}
     </div>
   </div>
-</div>
+<!-- </div> -->
 
   <div class="job-details-container" id="job-details-container">
     <div class="kontainer_vacancy" id="job-details-placeholder">

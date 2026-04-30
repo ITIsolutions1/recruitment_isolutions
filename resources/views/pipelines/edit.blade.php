@@ -305,6 +305,146 @@
                                 </div>
                             </div>
 
+                           <div class="form-group">
+
+    <div class="card shadow-sm border-0" style="border-radius: 14px;">
+        <div class="card-body">
+
+            <!-- TITLE -->
+            <h5 class="mb-3" style="font-weight:600;">
+                Ijazah
+            </h5>
+
+            <!-- FILE SAAT INI -->
+            <div class="mb-4">
+
+                <small class="text-muted d-block mb-2">
+                    Ijazah saat ini
+                </small>
+
+                @if($applicant->ijazah_file)
+                    <div class="d-flex justify-content-between align-items-center p-3 rounded"
+                         style="background:#f8f9fa;">
+
+                        <div>
+                            📄 
+                            <a href="{{ asset('storage/'.$applicant->ijazah_file) }}" 
+                               target="_blank"
+                               style="font-weight:500;">
+                                {{ basename($applicant->ijazah_file) }}
+                            </a>
+                        </div>
+
+                        <span class="badge badge-success">Tersedia</span>
+
+                    </div>
+                @else
+                    <div class="text-muted">
+                        Belum ada file ijazah
+                    </div>
+                @endif
+
+            </div>
+
+            <!-- GANTI FILE -->
+            <div>
+
+                <small class="text-muted d-block mb-2">
+                    Upload ijazah baru (opsional)
+                </small>
+
+                <div class="p-3 border rounded text-center"
+                     style="background:#fafafa; border-style:dashed;">
+
+                    <input type="file" 
+                           name="ijazah" 
+                           class="form-control-file mb-2">
+
+                    <small class="text-muted">
+                        PDF, JPG, PNG (Max 2MB)
+                    </small>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+                           <div class="form-group">
+
+    <!-- CARD -->
+    <div class="card shadow-sm border-0" style="border-radius: 14px;">
+        <div class="card-body">
+
+            <!-- TITLE -->
+            <h5 class="mb-3" style="font-weight:600;">
+                Sertifikat
+            </h5>
+
+            <!-- LIST FILE -->
+            @if($applicant->certificateFiles->count())
+                <div class="mb-4">
+
+                    <small class="text-muted d-block mb-2">
+                        Sertifikat yang sudah diupload
+                    </small>
+
+                    @foreach($applicant->certificateFiles as $file)
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded"
+                             style="background:#f8f9fa;">
+
+                            <div>
+                                📄 
+                                <a href="{{ asset('storage/'.$file->file) }}" target="_blank" 
+                                   style="font-weight:500;">
+                                    {{ basename($file->file) }}
+                                </a>
+                            </div>
+
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger delete-existing"
+                                    data-id="{{ $file->id }}">
+                                ✕
+                            </button>
+
+                        </div>
+                    @endforeach
+
+                </div>
+            @else
+                <div class="text-muted mb-3">
+                    Belum ada sertifikat
+                </div>
+            @endif
+
+
+            <!-- UPLOAD BARU -->
+            <div>
+
+                <small class="text-muted d-block mb-2">
+                    Tambahkan sertifikat baru
+                </small>
+
+                <div id="certificate-wrapper">
+                    <div class="certificate-item mb-2">
+                        <input type="file" name="certificate_files[]" class="form-control">
+                    </div>
+                </div>
+
+                <button type="button" id="add-certificate" 
+                        class="btn btn-sm btn-primary mt-2">
+                    + Tambah Sertifikat
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
                         </div>
                     </div>
         
@@ -808,6 +948,31 @@
       function updateEducationId(select) {
         document.getElementById('education_id').value = select.value;
     }
+</script>
+<script>
+document.getElementById('add-certificate').addEventListener('click', function () {
+
+    let wrapper = document.getElementById('certificate-wrapper');
+
+    let div = document.createElement('div');
+    div.classList.add('certificate-item', 'mb-2');
+
+    div.innerHTML = `
+        <div style="display:flex; gap:10px;">
+            <input type="file" name="certificate_files[]" class="form-control">
+            <button type="button" class="btn btn-danger remove-btn">X</button>
+        </div>
+    `;
+
+    wrapper.appendChild(div);
+});
+
+// hapus input baru
+document.addEventListener('click', function(e){
+    if(e.target.classList.contains('remove-btn')){
+        e.target.closest('.certificate-item').remove();
+    }
+});
 </script>
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css"> {{-- library untuk text editor --}}
 <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script> {{-- library untuk text editor --}}

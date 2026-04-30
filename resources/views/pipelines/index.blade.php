@@ -513,22 +513,61 @@
                         <!-- <p><strong>Skills:</strong> <span id="applicant-skills"></span></p> -->
                         <p><strong>Current Salary:</strong> Rp.<span id="applicant-salary-current"></span></p>
                         <p><strong>Salary Expectation:</strong> Rp.<span id="applicant-salary"></span></p>
+                       <!-- Strengths -->
+                        <label><strong>Strengths:</strong></label>
 
+                        <trix-toolbar id="toolbar-strengths"></trix-toolbar>
+                        <input type="hidden" id="input-strengths" name="strengths">
+
+                        <trix-editor 
+                            toolbar="toolbar-strengths" 
+                            input="input-strengths"
+                            style="min-height: 100px;">
+                        </trix-editor>
+
+
+                        <!-- Weaknesses -->
+                        <label><strong>Weaknesses:</strong></label>
+
+                        <trix-toolbar id="toolbar-weaknesses"></trix-toolbar>
+                        <input type="hidden" id="input-weaknesses" name="weaknesses">
+
+                        <trix-editor 
+                            toolbar="toolbar-weaknesses" 
+                            input="input-weaknesses"
+                            style="min-height: 100px;">
+                        </trix-editor>
+                        <label><strong>Notes:</strong></label>
                         <textarea id="applicant-notes" placeholder="Add notes here..." style="width: 100%; height: 100px;" disabled></textarea>
+                      
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
+                <button class="btn btn-success mt-2" onclick="saveStrengthWeakness()">
+                    Save Strength & Weakness
+                </button>
                 <button id="save-notes-button" onclick="saveNotes()" class="btn btn-primary">Save Notes</button>
                 <button id="edit-notes-button" onclick="editNotes()" class="btn btn-secondary" style="display: none;">Edit</button>
                 <button onclick="deleteNotes()" class="btn btn-danger">Delete Notes</button>
+                <a id="download-summary-isolutions" href="#" class="btn btn-success">
+                    Summary Isolutions
+                </a>
                 <a id="download-cv" href="#" class="btn btn-success">Download CV</a>
                 <a id="download-cv2" href="#" class="btn btn-success">Download CV RESINDO</a>
                 <a id="download-summary" href="#" class="btn btn-success">Download SUMMARY RESINDO</a>
+                <a id="download-lampiran" href="#" class="btn btn-info">
+                    Download Lampiran
+                </a>
+                
                 <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">Send Notifications</button>
                 {{-- <a id="send_notifications" href="#" class="btn btn-warning">Send Notifications</a> --}}
                 {{-- @if($applicant->status === 'offer')
-                <a href="{{ route('offer_letters.create', $applicant->id) }}" class="btn btn-warning">
+                <a href="{{ route('offer_letters.create', $applicant-
+                <a href="{{ route('applicant.downloadLampiran', $applicant->id) }}" 
+   class="btn btn-info">
+   Download Lampiran
+</a>>id) }}" class="btn btn-warning">
                     Create Offering Letter
                 </a>
                 @endif --}}
@@ -635,8 +674,31 @@
         $('#applicant-salary').text(formatted_salary);
         $('#applicant-salary-current').text(formatted_salary_current);
         $('#download-cv').attr('href', "{{ url('/pipelines') }}/" + applicant.id + "/pdf").attr('target', '_blank');
-        $('#download-cv2').attr('href', "{{ url('/pipelines') }}/" + applicant.id + "/pdf2").attr('target', '_blank');
+        if (applicant.type === "resindo") {
+    $('#download-cv2')
+        .attr('href', "{{ url('/pipelines') }}/" + applicant.id + "/pdf2")
+        .attr('target', '_blank')
+        .show();
+        $('#input-strengths').val(applicant.strengths ?? '');
+        $('#input-weaknesses').val(applicant.weaknesses ?? '');
+
+    $('#download-summary')
+        .attr('href', "{{ url('/pipeline-resindo') }}/" + applicant.id + "/summary")
+        .attr('target', '_blank')
+        .show();
+} else {
+    $('#download-cv2, #download-summary').hide();
+}
+             $('#download-lampiran')
+        .attr('href', "{{ url('/applicant') }}/" + applicant.id + "/download-lampiran")
+        .attr('target', '_blank');
+        $('#download-summary-isolutions')
+        .attr('href', "{{ url('/pipelines') }}/" + applicant.id + "/summary")
+        .attr('target', '_blank')
         $('#download-summary').attr('href', "{{ url('/pipelines') }}/" + applicant.id + "/summary").attr('target', '_blank');
+     
+
+
         $('#send_notifications').attr('href', "{{ url('/notification/status') }}/" + applicant.id);
         $('#id_for_notification').val(applicant.id);
         $('#sendNotificationModalLabel').empty();
@@ -649,39 +711,94 @@
         }
 
 
-        currentApplicantId = applicant.id;
+      currentApplicantId = applicant.id;
 
+// tampilkan modal dulu (biar trix sudah ke-render)
+$('#applicantInfoModal').modal('show');
 
-        fetch('/getnotes/' + currentApplicantId)
-            .then(response => {
-                if (!response.ok) {
-                    // throw new Error('ada kesalahan');
-                    console.log('error')
-                }
-                return response.json();
-            })
-            .then(data => {
-                const savedNotes = data.notes;
-                const notes = data.notes;
-                console.log(notes);
-                $('#applicant-notes').val(savedNotes ? savedNotes : '');
+fetch('/getnotes/' + currentApplicantId)
+    .then(response => {
+        if (!response.ok) {
+            console.log('error');
+        }
+        return response.json();
+    })
+    .then(data => {
 
-                if (savedNotes) {
-                    $('#applicant-notes').prop('disabled', true);
-                    $('#save-notes-button').hide();
-                    $('#edit-notes-button').show();
-                } else {
-                    $('#applicant-notes').prop('disabled', false);
-                    $('#save-notes-button').show();
-                    $('#edit-notes-button').hide();
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-            });
+        // =========================
+        // NOTES
+        // =========================
+        const savedNotes = data.notes || '';
 
-        $('#applicantInfoModal').modal('show');
+        $('#applicant-notes').val(savedNotes);
+
+        if (savedNotes) {
+            $('#applicant-notes').prop('disabled', true);
+            $('#save-notes-button').hide();
+            $('#edit-notes-button').show();
+        } else {
+            $('#applicant-notes').prop('disabled', false);
+            $('#save-notes-button').show();
+            $('#edit-notes-button').hide();
+        }
+
+        // =========================
+        // STRENGTHS & WEAKNESSES
+        // =========================
+      const strengths = data.strengths || '';
+const weaknesses = data.weaknesses || '';
+
+// set hidden input
+$('#input-strengths').val(strengths);
+$('#input-weaknesses').val(weaknesses);
+
+// pakai delay + fallback
+setTimeout(() => {
+
+    const trixStrengths = document.querySelector("trix-editor[input='input-strengths']");
+    const trixWeaknesses = document.querySelector("trix-editor[input='input-weaknesses']");
+
+    if (trixStrengths?.editor) {
+        trixStrengths.editor.loadHTML(strengths);
     }
+
+    if (trixWeaknesses?.editor) {
+        trixWeaknesses.editor.loadHTML(weaknesses);
+    }
+
+}, 500);
+
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+    });
+    }
+
+    function saveStrengthWeakness() {
+    if (currentApplicantId) {
+
+        const strengths = $('#input-strengths').val();
+        const weaknesses = $('#input-weaknesses').val();
+
+        $.ajax({
+            url: "{{ route('save.strength.weakness') }}",
+            type: "POST",
+            data: {
+                applicant_id: currentApplicantId,
+                strengths: strengths,
+                weaknesses: weaknesses,
+                _token: "{{ csrf_token() }}"
+            },
+            success: function(response) {
+                alert(response.message);
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                alert('Error saving data');
+            }
+        });
+    }
+}
 
 
 

@@ -253,7 +253,46 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <label><strong>Lampiran</strong></label>
 
+                                    <div class="mt-2">
+                                        <label for="ijazah_file">Upload ijazah</label>
+                                        <span>masukkan ijazah terakhir</span>
+                                        <input type="file" 
+                                            name="ijazah_file" 
+                                            id="ijazah_file"
+                                            class="form-control @error('ijazah_file') is-invalid @enderror">
+
+                                        @error('ijazah_file')
+                                            <span class="text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- certificate --}}
+                            <div class="form-group">
+                                <label><strong>Upload Sertifikat</strong></label>
+
+                                <div id="certificate-wrapper">
+
+                                    <div class="certificate-item mb-2">
+                                        <input type="file" name="certificate_files[]" class="form-control">
+                                    </div>
+
+                                </div>
+
+                                <!-- tombol tambah -->
+                                <button type="button" id="add-certificate" class="btn btn-sm btn-primary mt-2">
+                                    + Tambah Sertifikat
+                                </button>
+
+                            </div>
+
+ 
                         </div>
                     </div>
 
@@ -605,6 +644,31 @@
             }
         });
     });
+</script>
+<script>
+document.getElementById('add-certificate').addEventListener('click', function () {
+
+    let wrapper = document.getElementById('certificate-wrapper');
+
+    let div = document.createElement('div');
+    div.classList.add('certificate-item', 'mb-2');
+
+    div.innerHTML = `
+        <div style="display:flex; gap:10px;">
+            <input type="file" name="certificate_files[]" class="form-control">
+            <button type="button" class="btn btn-danger remove-btn">X</button>
+        </div>
+    `;
+
+    wrapper.appendChild(div);
+});
+
+// hapus input
+document.addEventListener('click', function(e){
+    if(e.target.classList.contains('remove-btn')){
+        e.target.closest('.certificate-item').remove();
+    }
+});
 </script>
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css"> {{-- library untuk text editor --}}
 <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script> {{-- library untuk text editor --}}

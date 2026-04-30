@@ -177,9 +177,9 @@
         }
 
         footer {
-            display: flex;
+            /* display: flex;
             align-content: flex-end;
-            justify-content: space-between;
+            justify-content: space-between; */
             position: fixed;
             bottom: 0;
             left: 0;
@@ -454,7 +454,7 @@
         @endif
 
 
-         <footer class="footer">
+         <!-- <footer class="footer">
             <div class="logo">
                 <img src="{{ public_path('assets/ISOLOGO.png') }}" alt="Logo" class="logo">
             </div>
@@ -466,7 +466,7 @@
             <div class="qr-code">
                 <img src="{{ public_path('assets/QR.png') }}" alt="QR Code" class="qr-code">
             </div>
-        </footer>
+        </footer> -->
 
 
 

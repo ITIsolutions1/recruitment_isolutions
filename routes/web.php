@@ -39,8 +39,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/list', [VacancyController::class, 'list'])->name('vacancy_list');
 Route::get('/list1', [VacancyController::class, 'list2'])->name('list');
-Route::get('/jobs/{id}', [VacancyController::class, 'show'])->name('jobs.show');
-
+// Route::get('/jobs/{id}', [VacancyController::class, 'show'])->name('jobs.show');
+// Route::get('/vacancy/jobs/{id}', [VacancyController::class, 'show'])->name('vacancy.jobs.show');
+Route::get('/jobs/{id}', [VacancyController::class, 'show'])
+    ->where('id', '[0-9]+')
+    ->name('jobs.show');
 Route::get('/job/{job}', [VacancyController::class, 'showJobDetails'])->name('vacancy.details');
 Route::get('/vacancy/{id}', [VacancyController::class, 'index'])->name('vacancy');
 Route::get('/list1/search', [VacancyController::class, 'search'])->name('vacancy.search');
@@ -58,7 +61,7 @@ Route::middleware(['admin.only', 'auth'])->group(function(){
     Route::get('/profile',[UserController::class, 'index'])->name('profile.index');
     Route::post('/profile_update',[UserController::class, 'update'])->name('profile.update');
 
-    Route::resource('jobs', \App\Http\Controllers\JobController::class);
+    Route::resource('jobs', JobController::class);
     Route::resource('departements', DepartementController::class);
     Route::resource('pipelines', ApplicantController::class);
     Route::resource('education', EducationController::class);
@@ -68,9 +71,9 @@ Route::middleware(['admin.only', 'auth'])->group(function(){
     Route::resource('pipelines-resindo', ResindoController  ::class);
     Route::get('/pipelines-resindo/{id}/pdf', [ResindoController::class, 'generateCV'])->name('applicants.generateCV');
     Route::get('/pipelines/{id}/pdf2', [ResindoController::class, 'generateCV'])->name('applicants.generateCV');
-    Route::get('/pipelines/{id}/summary', [ResindoController::class, 'generateSummary'])->name('applicants.generateSummary');
+    // Route::get('/pipelines/{id}/summary', [ResindoController::class, 'generateSummary'])->name('applicants.generateSummary');
 
-    Route::get('/pipelines-resindo/{id}/summary', [ResindoController::class, 'generateSummary'])->name('applicants.generateSummary');
+    // Route::get('/pipelines-resindo/{id}/summary', [ResindoController::class, 'generateSummary'])->name('applicants.generateSummary');
     Route::get('pipelines-resindo', [ResindoController::class, 'indexresindo'])
         ->name('pipelines-resindo.index');
 
@@ -82,13 +85,19 @@ Route::middleware(['admin.only', 'auth'])->group(function(){
     Route::get('/pipelines/{id}/pdf', [ApplicantController::class, 'generatePdf'])->name('applicants.generatePdf');
     Route::get('/pipelines/{id}/pdf', [ApplicantController::class, 'generatePdf'])
     ->name('pipelines.pdf');
+    Route::get('/pipelines/{id}/summary', [ApplicantController::class, 'generateSummary'])->name('applicants.generateSummary');
+
     Route::post('/applicant/recommend', [ApplicantController::class, 'updateRecommendation'])->name('applicant.recommend');
+    Route::get('/applicant/{id}/download-lampiran', 
+    [ApplicantController::class, 'downloadLampiran']
+    )->name('applicant.downloadLampiran');
     Route::delete('/pipelines/{applicant}', [ApplicantController::class, 'destroy'])->name('pipelines.destroy');
     Route::get('/get-jurusan/{education_id}', [ApplicantController::class, 'getJurusan']);
 
     // ====NOTES====
     Route::get('/getnotes/{id}', [ApplicantController::class, 'getNotes'])->name('getnotes');
     Route::post('/save-notes', [ApplicantController::class, 'saveNotes'])->name('save.notes');
+    
     Route::post('/delete-notes', [ApplicantController::class, 'deleteNotes'])->name('delete.notes');
 
     //route for major
